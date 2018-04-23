@@ -1,0 +1,57 @@
+---
+title: "EDA Lab1"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+As séries análisadas serão duas, Breaking Bad e Silicon Valley
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+
+```
+
+```{r}
+
+series = read_csv(here("data/series_from_imdb.csv"), 
+                    progress = FALSE,
+                    col_types = cols(.default = col_double(), 
+                                     series_name = col_character(), 
+                                     episode = col_character(), 
+                                     url = col_character(),
+                                     season = col_character()))
+
+series %>% filter(series_name %in% c("Breaking Bad", "Silicon Valley"))
+
+```
+
+# Perguntas
+
+a) Qual série é melhor avaliada no IMDB? 
+
+
+```{r}
+
+breaking_bad_user_rating_avg = series %>%
+    filter(series_name == "Breaking Bad") %>%
+    group_by(season) %>%
+    mutate(season_avg = round(mean(user_rating), 2))
+
+#summary(breaking_bad_user_rating_avg)
+#breaking_bad_user_rating_avg
+
+ggplot(breaking_bad_user_rating_avg, aes(x = season_avg, y = season)) +
+    geom_count()
+
+```
+
