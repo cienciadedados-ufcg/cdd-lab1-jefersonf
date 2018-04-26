@@ -31,7 +31,9 @@ series = read_csv(here("data/series_from_imdb.csv"),
                                      url = col_character(),
                                      season = col_character()))
 
-series %>% filter(series_name %in% c("Breaking Bad", "Silicon Valley"))
+series = series %>% filter(series_name %in% c("Breaking Bad", "Silicon Valley")) %>%
+  group_by(series_name, season) %>%
+  mutate(medias = mean(user_rating))
 
 ```
 
@@ -42,16 +44,14 @@ a) Qual série é melhor avaliada no IMDB?
 
 ```{r}
 
-breaking_bad_user_rating_avg = series %>%
-    filter(series_name == "Breaking Bad") %>%
-    group_by(season) %>%
-    mutate(season_avg = round(mean(user_rating), 2))
+ggplot(series, aes(x = series_name, y = medias, label = season)) +
+  geom_text(nudge_x = 0.05, nudge_y = 0.0) + 
+  geom_point()
 
-#summary(breaking_bad_user_rating_avg)
-#breaking_bad_user_rating_avg
+```
 
-ggplot(breaking_bad_user_rating_avg, aes(x = season_avg, y = season)) +
-    geom_count()
+```{r}
+
 
 ```
 
