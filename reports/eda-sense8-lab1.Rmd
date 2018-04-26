@@ -39,7 +39,7 @@ series = series %>% filter(series_name %in% c("Breaking Bad", "Silicon Valley"))
 
 # Perguntas
 
-a) Qual série é melhor avaliada no IMDB? 
+Qual série é melhor avaliada no IMDB? 
 
 
 ```{r}
@@ -56,4 +56,7 @@ ggplot(series, aes(x = season, y = medias_temporada, label = season, color = ser
   geom_line()
 
 ```
+
+O gráfico acima mostra que a série Breaking Bad é melhor avaliada, em relação a série Silicon Valley, em todas as suas temporadas. Além disso, ´e posível notar que, no caso de Breaking Bad, as notas de avaliação foram aumentando ao longo das temporadas, situação muito distinta para silicon valley que, diminui sua nota de avalição a partir da segunda temporada.
+
 
