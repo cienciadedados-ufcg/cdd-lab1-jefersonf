@@ -1,0 +1,99 @@
+---
+title: "EDA Laboratório 1"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+##Que tal analisarmos duas séries avaliadas no IMDB?
+
+Pois bem, as séries análisadas em questão serão duas, Breaking Bad e Silicon Valley, ambas com um número pequeno de temporadas, 5 e 4, respectivamente.
+
+Nessa análise vamos responder duas perguntas:
+
+1. Qual a série melhor avalida? 
+
+2. Quais temporadas tendem a ser melhor avaliadas? A primeira, temporadas intermédias ou a última? 
+
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+
+```
+
+
+Bom, antes de qualquer coisa precisamos coletar dados no IMDB sobre as séries que estamos considerando nesta análise. E para isso precisamos `coletar` de alguma forma esses dados, em nosso caso, através de uma arquivo `series_from_imdb.csv` que contém dados sobre todas as serias avaliadas no IMDB. 
+
+```{r}
+
+series = read_csv(here("data/series_from_imdb.csv"), 
+                    progress = FALSE,
+                    col_types = cols(.default = col_double(), 
+                                     series_name = col_character(), 
+                                     episode = col_character(), 
+                                     url = col_character(),
+                                     season = col_character()))
+
+series = series %>%
+    filter(series_name %in% c("Breaking Bad", "Silicon Valley")) %>%
+    group_by(series_name, season) %>%
+    mutate(medias_temporada = mean(user_rating))
+
+```
+
+Note que, para essa análise, filtramos de todos os dados apenas os que nos enteressa nesse momento, `Breaking Bad` e `Silicon Valey` 
+
+### Um sumário inicial dos dados
+
+A tabela abaixo sumariza as temporadas de ambas as series mostrando números importantes para considerarmos nesta análise. Podemos observar para cada temporada (coluna `season`) a menor e maior avaliação (`min_rating` e `max_rating` respectivamente), a média de avaliação de cada temporada (`average`) como também algumas coisas importantes como variância (`variance`) e desvio padrão (`sd`).
+
+```{r}
+summary = series %>%
+    group_by(season, series_name) %>%
+    summarize(
+        min_rating = min(user_rating), 
+        max_rating = max(user_rating),
+        average = mean(user_rating),
+        variance = var(user_rating), 
+        sd = sd(user_rating))
+
+summary
+```
+
+
+# Perguntas
+
+##Qual série é melhor avaliada no IMDB? 
+
+```{r}
+
+ggplot(series, aes(x = season, y = medias_temporada, label = season, color = series_name, group = series_name)) +
+    geom_line() +
+    labs(x = "Seasons", y = "Rating")
+
+```
+
+O gráfico acima mostra que a série Breaking Bad é melhor avaliada, em relação a série Silicon Valley, em todas as suas temporadas. Além disso, é possível notar que, no caso de Breaking Bad, as notas de avaliação foram aumentando ao longo das temporadas, situação muito distinta para silicon valley, que diminui sua nota de avalição a partir da segunda temporada.
+As notas de avaiação para a série Breaking Bad variam bastante ao longo das temporadas, com tentencia de crescimento, enquanto que Silicon Valley possui pouca variação. Dessa forma, e com apoio da visualização gráfica, a diferença de avaliação entre as séries é grande.
+Portanto, a série melhor avaliada é Breaking Bad.
+
+##Qual das séries que você escolheu tem episódios de qualidade mais irregular segundo o IMDB? A diferença é grande? Pequena?
+
+```{r}
+
+ggplot(summary, aes(x = series_name, y = average), color = series_name) +
+    geom_boxplot()
+
+```
+
+Como é possível observar no gráfico acima, para a série Breaking Bad o mediana está bem próximo do primeiro quartil, indicando maior irregularidade no valor de avaliação média dentre suas cinco temporadas. Quando observado a série Silicon valley vemos que a mediana está no centro, isto é, representando uma média central nos 50% das médias de avaliação de suas quatro temporadas, ou seja, possuindo pouca irregularidade.
+Dessa forma, a séria Breaking Bad possui maior irregularidade quanto aos seus episódios, segundo o IMDB, quando comparada a série Silicon Valley.
