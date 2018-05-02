@@ -31,32 +31,67 @@ series = read_csv(here("data/series_from_imdb.csv"),
                                      url = col_character(),
                                      season = col_character()))
 
-series = series %>% filter(series_name %in% c("Breaking Bad", "Silicon Valley")) %>%
-  group_by(series_name, season) %>%
-  mutate(medias_temporada = mean(user_rating))
+series = series %>% 
+    filter(series_name %in% c("Breaking Bad", "Silicon Valley")) %>%
+    group_by(series_name, season) %>%
+    mutate(medias_temporada = mean(user_rating))
 
 ```
 
 # Perguntas
 
-Qual série é melhor avaliada no IMDB? 
+Qual série é melhor avaliada no IMDB?
 
 
 ```{r}
 
 ggplot(series, aes(x = series_name, y = medias_temporada, label = season)) +
   geom_text(nudge_x = 0.05, nudge_y = 0.0) + 
-  geom_point()
+  geom_point() +
+    ggtitle("Diferença entre Séries") + xlab("Series") + ylab("Media Temporadas")
 
 ```
 
 ```{r}
 
 ggplot(series, aes(x = season, y = medias_temporada, label = season, color = series_name, group = series_name)) +
-  geom_line()
+  geom_line() + ggtitle("Comparando Temporadas") + xlab("Temporada") + ylab("Avaliações") 
 
 ```
 
 O gráfico acima mostra que a série Breaking Bad é melhor avaliada, em relação a série Silicon Valley, em todas as suas temporadas. Além disso, ´e posível notar que, no caso de Breaking Bad, as notas de avaliação foram aumentando ao longo das temporadas, situação muito distinta para silicon valley que, diminui sua nota de avalição a partir da segunda temporada.
+
+
+---
+
+### Comentários e correções
+
+2. Responda as seguintes duas perguntas: 
+    a. Qual das séries que você escolheu é mais bem avaliada no IMDB? A diferença é grande? Pequena? Muda de acordo com as temporadas da série? 
+    
+    Acredito que a melhor forma de responder a primeira pergunta seria calcular uma medida de sumarização / tendência central para cada série (moda, média, mediana). Dessa forma você poderia ter mais confiança de quem, no geral, é a série melhor avaliada. A segunda questão não foi respondida. Uma boa maneira de visualizar isso seria em um boxplot por série (que poderia responder a primeira e a segunda questão).
+
+    
+```{r}
+# exemplo: utilizando a mediana como medida de resumo
+series %>%
+    ggplot(aes(x=series_name,y=user_rating)) +
+    ggtitle("Comparando Séries") + xlab("Series") + ylab("Avaliações") +
+    geom_boxplot() +
+    geom_point(alpha=0.3)
+```
+    
+    
+    b. Qual das séries que você escolheu tem episódios de qualidade mais irregular segundo o IMDB? A diferença é grande? Pequena?
+    Repare que as perguntas deixam para você a responsabilidade de decidir como analisar quem é mais bem avaliada, o que é irregularidade entre episódios, etc.
+
+As questões da letra B não foram respondidas. A questão pode ser respondida avaliando a dispersção / desvio das avaliações por episódio.
+
+3. Para responder cada uma dessas perguntas, você usará dados de algumas séries e uma ou mais variáveis dos dados. **Para saber o que você está fazendo, 
+você deve sempre visualizar essas variáveis para esses dados antes de começar, deve comentar como é a distribuição dos valores das variáveis 
+(tem valores estranhos? muita variação? valores muito frequentes?)** e decidir se é preciso qualquer tipo de filtragem ou transformação nos dados.
+
+Senti falta de um pouco mais de análise / explicações ao longo do código e comentários sobre distribuição e variação dos dados utilizados.
+
 
 
