@@ -19,6 +19,15 @@ theme_set(theme_bw())
 
 ```
 
+
+##1. Visão Geral
+
+Estamos no Checkpoint 3, em nosso primeiro laboratório, e para tanto vamos responder duas perguntas acerca de nosso conjunto de dados, descrevendo-as e fazendo discusões a partir das conclusões.
+
+Nessa análise vamos continuar utilizando dos dados do [IMDB](https://www.imdb.com/)  sobre seriados de TV. Neste [repositório](https://github.com/nazareno/imdb-series), encontram-se todos os dados e variáveis necessarios para essa análise.
+
+##2. Carregando conjunto de dados
+
 ```{r}
 
 series = read_csv(here("data/series_from_imdb.csv"),
@@ -30,35 +39,191 @@ series = read_csv(here("data/series_from_imdb.csv"),
                                    season = col_character()))
 
 
-
 ```
 
-Vamos atacar essas duas seguintes perguntas
+##3. Perguntas
 
-1. Qual série possui maior diferença de avaliações de temporadas?
+<br></br>
+
+###3.1 Pergunta 1 - Quais séries possuem maior diferença entre notas de avaliações por temporadas?
+
+Para responder essa pergunta precisamos criar duas novas variáveis em nosso conjunto de dados, a saber, `season_average` e `season_rating_dist`, que irão definir a média de avaliação e a diferença absoluta entre a maior e a menor nota de avaliação por temporada para cada serie, respectivamente. Com essas variáveis pretendo análisar as diferenças de avaliações para todo o conjunto de series, observando as frequências das médias de avaliação.
+
+<br></br>
+
+####3.1.1 Agrupandos os dados
+
+Primeiro, vamos agrupar os dados por `series_name` e `season`, ou seja, estaremos agrupando nossos dados pele nome da série e por suas temporadas.
 
 ```{r}
-
-
-series
 
 series = series %>%
-  group_by(series_name, season) %>%
-  summarize(season_avg = mean(user_rating), season_rating_dist = max(user_rating) - min(user_rating))
-
-series %>% filter(season_avg < 5.0)
-
-ggplot(series, aes(x = season_avg, y = season_rating_dist)) +
-  geom_hex()
-
-
+    group_by(series_name, season, user_votes)
+    
 ```
 
+<br></br>
 
-2. Quanto maior o número de episódios, mais popular a série?
+####3.1.2 Resumindo os dados
+
+Aqui, resumimos nossa tabela de dados acerca das variáveis que pretendemos definir e análisar.
 
 ```{r}
 
+series = series %>%
+    summarize(
+        season_average = mean(user_rating),
+        season_rating_dist = max(user_rating) - min(user_rating), 
+        season_size = n())
+
+series %>%
+    select(series_name, season_average, season_rating_dist) %>%
+    arrange(season_rating_dist, -season_average)
 
 ```
+
+<br></br>
+
+####3.1.3 Gráfico 1 - Analisando média e diferenças das notas de avaliações 
+
+Para essa visualização, escolhi apresentar os dados como se segue, com um conjunto de hexagonos que agrupam series a partir da variável `season_rating_dist`. Além disso, pode-se visualizar a contagem/frequência de series que possuem diferença entre maior e menor nota próximas ou distantes.
+
+```{r}
+
+ggplot(series, aes(x = season_average, y = season_rating_dist)) +
+    geom_hex(bins=12) +
+    stat_binhex(aes(label=..count..), geom="text", bins=12, colour="white") +
+    scale_x_continuous(breaks = seq(0, 10, 1)) +
+    labs(x = "Média de avaliação",
+         y = "Distância entre maior e menor avaliação")
+    
+```
+<br></br>
+
+####3.1.4 Discussão
+
+A partir desta visualização pode-se notar que:
+
+* A maior parte das series possuem média de avaliação próxima de 8.0 e, além disso, possuem uma pequena diferença de avaliação, segundo a variável `season_rating_dist`, ou seja, são séries com avaliações estáveis e que são consideradas _boas_ pelas avaliações de usuários (ver 4º quadrante).
+
+* Poucas séries atingem a proesa de serem bem avaliadas de forma constante, mantendo uma diferença entre a maior e menor avaliação próxima de zero.
+
+* Há um conjunto de séries, de tamanho considerável, que possuem avaliação menor ou igual a 7.0 e ainda possuem grande diferença em entre a maior e menor avaliação, indicando que sua média de avaliação é bastante comprometida. Ou seja, nota-se que a média de avaliação não é uma boa medida para comparação. Obeservando o 2º e 3º quadrante temos que há series cuja média de avaliação não representa bem a qualidade da mesma e que, por outro lado, temos um conjunto de series cujo a média bem representa as notas de avaliação, respectivamente. Isto é, quanto menor `season_rating_dist` melhor representação terá a média de avaliação para a temporada de uma série.  
+
+<br></br>
+
+###3.2 Pergunta 2 - Quanto maior o número de episódios, mais popular a série?
+
+Antes de tudo, vamos considerar que uma série é **popular**, se possui um grande volume de avaliações no [IMDB](https://www.imdb.com/). Diante disso, vamos definir uma variável `season_size`, que irá representar o tamanho das temporadas de cada série.
+
+Portanto, para responder essa pergunta vamos análisar duas variárias, `user_votes` e `season_size`, para descobrirmos a relação de popularidade  e tamanho de temporada. 
+
+<br></br>
+
+####3.2.1 Resumo dos dados
+
+```{r}
+
+series %>%
+    select(series_name, season, user_votes, season_size)
+
+```
+
+<br></br>
+
+####3.2.2 Gráfico 2 - Analisando volume de avaliações e tamanho das temporadas 
+
+Na visualização a seguir, nota-se o grande volume de avaliações feitas para series com temporadas bastante curtas. Pode-se observar que series com apenas uma temporada custumam ser mais populares, considerando nossa definição anterior. 
+
+```{r}
+
+ggplot(series, aes(x = season_size, y = user_votes)) +
+    geom_jitter(color = "darkblue", alpha = 0.3) +
+    scale_x_continuous(breaks = seq(min(series$season_size), max(series$season_size), 1)) +
+    scale_y_continuous(breaks = seq(0, max(series$user_votes), 10000)) +
+    labs(x = "Tamanho da temporada",
+         y = "Volume de avaliações")
+
+```
+
+####3.2.3 Gráfico 3 - Analisando volume de avaliações e tamanho das temporadas 
+
+Mas, se compararmos apenas as series que possuem no máximo duas temporadas, podemos obersavar que para series de uma única temporada há um volume de avaliações que excedem/extrapolam a média. Ou seja, series com poucas temporadas tendem a ser mais populares e, em especial, as que possuem apenas única temporada.  
+
+```{r}
+
+series = series %>%
+    filter(season_size < 3)
+
+ggplot(series, aes(x = season_size, y = user_votes)) +
+    geom_jitter(color = "darkcyan", alpha = 0.3) +
+    scale_x_continuous(breaks = seq(min(series$season_size), max(series$season_size), 1)) +
+    scale_y_continuous(breaks = seq(0, max(series$user_votes), 10000)) +
+    labs(x = "Tamanho da temporada",
+        y = "Volume de avaliações")
+```
+
+<br></br>
+
+####3.2.4 Discussão
+
+O Gráfico 2 nos mostra que quanto menor o número de temporadas mais popular se torna a serie, seguindo minha definição incial de popularidade. Além disso, pode-se verificar o seguinte:
+
+* Em series de única temporada, quando comparadas com as que possuem duas ou mais, possuem, em maioria, mais de 5000 avaliações, em média.
+
+* Series com 10 ou mais temporadas possuem baixos indices de avaliação.
+
+* A quantidade de temporadas tem alguma relação com o número de avaliações, porém não utilizei a variável **qualidade** (e.g média de avaliação) para melhor validar a resposta desta pergunta. 
+
+
+<br></br>
+
+
+##4. Gerando mais perguntas
+
+
+###4.1 Quanto a pergunta 1, quais seriam as series consideradas **ruins**, que possuem além de baixa avaliação, grande diferença entre maior e menor avaliação?
+
+Vamos considerar que uma serie é mal avaliada se possui média de avaliação menor que 7.0, ou seja, `season_average < 7.0`. Basta então, filtrarmos do conjunto de series as que possuem além de baixa avaliação, as que possuem `season_rating_dist` elevado. Para tanto, consideremos também, que `season_rating_dist` é elevado se está acima da média, isto é, `season_rating_dist > mean(season_rating_dist)`.
+
+Lista das series consideradas **ruins**.
+
+```{r}
+
+season_rating_dist_avg <- mean(series$season_rating_dist)
+
+series %>%
+    filter(season_average < 7.0, season_rating_dist > season_rating_dist_avg) %>%
+    select(season, series_name, season_average, season_rating_dist)
+
+
+```
+
+<br></br>
+
+###4.2 Quanto a pergunta 2, quais a series de única temporada que excedem o volume médio de avaliações?
+
+De forma semelhante a pergunta anterior, temos aqui, que definir o volume médio de avaliações, vamos chamar essa variável de `user_votes_avg`. Assim, podemos *filtrar* os dados de interesse.
+
+```{r}
+
+user_votes_avg <- mean(series$user_votes)
+
+# Número médio de avaliações feitas
+print(user_votes_avg)
+
+```
+
+Basta então filtrarmos das series que possuem única temporada, as que posssuem `user_votes > user_votes_avg`.
+
+```{r}
+
+series %>%
+    filter(season_size == 1, user_votes > round(user_votes_avg)) %>%
+    select(season, series_name, user_votes)
+
+```
+
+
+
 
