@@ -102,5 +102,5 @@ Portanto, a série melhor avaliada é Breaking Bad.
 
 ##Conclusão
 
-Como é possível observar nas visualizações, para a série Breaking Bad o mediana está bem próximo do primeiro quartil, indicando maior irregularidade no valor de avaliação média dentre suas cinco temporadas. Quando observado a série Silicon valley vemos que a mediana está no centro, isto é, representando uma média central nos 50% das médias de avaliação de suas quatro temporadas, ou seja, possuindo pouca irregularidade.
+Como é possível observar nas visualizações, para a série Breaking Bad a mediana está bem próximo do primeiro quartil, indicando maior irregularidade no valor de avaliação média dentre suas cinco temporadas. Quando observado a série Silicon valley vemos que a mediana está no centro, isto é, representando uma média central nos 50% das médias de avaliação de suas quatro temporadas, ou seja, possuindo pouca irregularidade.
 Dessa forma, a séria Breaking Bad possui maior irregularidade quanto aos seus episódios, segundo o IMDB, quando comparada a série Silicon Valley.
