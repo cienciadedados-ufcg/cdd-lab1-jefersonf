@@ -50,7 +50,7 @@ dataset = dataset %>%
     
 
 ```
-
+Para responder a pergunta acima, vamos considerar duas variáveis, `season` e `user_rating`, que representam as temporadas e as avaiações dos usuários, respectivamente.  
 
 ###Visualização 1
 
