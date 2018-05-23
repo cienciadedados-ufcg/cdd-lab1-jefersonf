@@ -1,0 +1,106 @@
+---
+title: "eda-prob2-cp1-interative"
+author: "Jeferson Ferreira"
+date: "21 de maio de 2018"
+output:
+  html_document:
+    code_folding: hide
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+
+library(tidyverse)
+library(here)
+library(plotly)
+library(viridis)
+library(highcharter)
+library(htmltools)
+theme_set(theme_bw())
+
+```
+
+
+Nessa análise vamos continuar utilizando dos dados do [IMDB](https://www.imdb.com/)  sobre seriados de TV/Stream. Neste [repositório](https://github.com/nazareno/imdb-series), encontram-se todos os dados e variáveis necessarios para essa análise.
+
+##Revisitando análise
+
+Em minha primeira análise, onde considerei duas séries, __Breaking Bad__ e __Silicon Valley__, ambos com um número pequeno de temporadas. Tentei responder a sequinte pergunta "_Qual entre as duas séries é melhor avaliada?_", mas agora adicionando interatividade no gráficos da nossa análise.
+
+
+```{r}
+
+dataset = read_csv(here("data/series_from_imdb.csv"), 
+                    progress = FALSE,
+                    col_types = cols(.default = col_double(), 
+                                     series_name = col_character(), 
+                                     episode = col_character(), 
+                                     url = col_character(),
+                                     season = col_character()))
+
+dataset = dataset %>%
+    filter(series_name %in% c("Breaking Bad", "Silicon Valley")) %>%
+    group_by(series_name, season) %>%
+    mutate(medias_temporada = mean(user_rating))
+    
+
+```
+
+
+###Visualização 1
+
+```{r  echo=FALSE, warning=FALSE, message=FALSE}
+
+ggplotly(
+    dataset %>%
+        ggplot(aes(x = season, y = user_rating, color = medias_temporada)) +
+        geom_point(alpha = .5) +
+        facet_wrap(~series_name) +
+        scale_color_viridis() +
+        theme_bw() +
+        labs(x = "Season", y = "Rating")
+)
+
+
+```
+
+
+###Visualização 2
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+ggplotly(
+    dataset %>%
+    ggplot(
+        aes(
+            x = season,
+            y = medias_temporada,
+            label = season,
+            color = series_name,
+            group = series_name
+    )) +
+    geom_line() +
+    labs(x = "Season", y = "Rating"), tooltip = c("x", "y")
+)
+
+
+
+```
+
+
+<br>
+
+Os gráficos acima mostram que a série Breaking Bad é melhor avaliada, em relação a série Silicon Valley, em todas as suas temporadas. Além disso, é possível notar que, no caso de Breaking Bad, as notas de avaliação foram aumentando ao longo das temporadas, situação muito distinta para silicon valley, que diminui sua nota de avalição a partir da segunda temporada.
+As notas de avaiação para a série Breaking Bad variam bastante ao longo das temporadas, com tentencia de crescimento, enquanto que Silicon Valley possui pouca variação. Dessa forma, e com apoio da visualização gráfica, a diferença de avaliação entre as séries é grande.
+Portanto, a série melhor avaliada é Breaking Bad.
+
+
+##Conclusão
+
+Como é possível observar nas visualizações, para a série Breaking Bad o mediana está bem próximo do primeiro quartil, indicando maior irregularidade no valor de avaliação média dentre suas cinco temporadas. Quando observado a série Silicon valley vemos que a mediana está no centro, isto é, representando uma média central nos 50% das médias de avaliação de suas quatro temporadas, ou seja, possuindo pouca irregularidade.
+Dessa forma, a séria Breaking Bad possui maior irregularidade quanto aos seus episódios, segundo o IMDB, quando comparada a série Silicon Valley.
